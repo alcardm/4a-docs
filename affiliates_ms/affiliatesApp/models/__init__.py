@@ -1,0 +1,1 @@
+from .affiliates import Affiliates
