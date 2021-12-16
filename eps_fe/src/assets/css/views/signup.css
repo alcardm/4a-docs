@@ -1,14 +1,18 @@
 .bg-register {
     min-width: 600px;
-    background-image: url("../../img/bg-login.png");
-    background: var(--light-gradient);
+    background-image: url("../../img/bg-register.jpeg");
     border-radius: 16px 0 0 16px;
     box-shadow: var(--shadow-3);
     display: flex;
     align-items: center;
     justify-content: center;
+    background-repeat: no-repeat;
+    background-size: 70%;
+    background-position: center;
+    background-color: white;
 }
 
 .register-img {
     max-width: 550px;
+    display: none;
 }

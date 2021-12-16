@@ -43,8 +43,12 @@
 }
 
 .welcome-img {
-    max-width: 600px;
-    min-width: 420px;
+    max-width: 474px;
+    min-width: 395px;
+    top: 0;
+    position: absolute;
+    right: 0;
+    margin: 3%;
 }
 
 .modules-title {

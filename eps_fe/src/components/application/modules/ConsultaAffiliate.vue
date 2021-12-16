@@ -1,29 +1,56 @@
 <template>
   <div>
-    <h1>Consulta de Productos</h1>
+    <h1 class="form-title">Afiliados</h1>
+    <form action="" class="search-form">
+      <div class="flex">
+        <div class="input-container input-container--search">
+          <label for="search" class="input-container__label">Buscar</label>
+          <input
+            type="text"
+            class="input-container__input"
+            name="search"
+            id="search"
+            required
+            v-model="filterAffiliatesInput"
+          />
+          <small>Buscar por documento</small>
+        </div>
+        <button v-on:click="filterAffiliates" class="primary-btn primary-btn--search">Filtrar</button>
+      </div>
+    </form>
+  </div>
+  <br />
+
+  <div>
     <div class="scroll-table">
       <table class="table">
         <thead>
           <tr class="table__header">
-            <th class="table__header-item">Código</th>
-            <th class="table__header-item">Nombre</th>
-            <th class="table__header-item">Stock</th>
-            <th class="table__header-item">Proveedor</th>
-            <th class="table__header-item">Categoría</th>
-            <th class="table__header-item">Costo unitario</th>
-            <th class="table__header-item">Acciones</th>
+            <th class="table__header-item">Id</th>
+            <th class="table__header-item">Nombres</th>
+            <th class="table__header-item">Apellidos</th>
+            <th class="table__header-item">Tipo Doc</th>
+            <th class="table__header-item">N° Doc</th>
+            <th class="table__header-item">Email</th>
+            <th class="table__header-item">Celular</th>
+            <th class="table__header-item">Ciudad</th>
+            <th class="table__header-item">Dirección</th>
+            <th class="table__header-item"></th>
           </tr>
         </thead>
         <tbody class="table__body">
-          <tr v-for="(product, index) in userProducts" :key="index">
-            <td class="table__body-item">{{ product.code }}</td>
-            <td class="table__body-item">{{ product.p_name }}</td>
-            <td class="table__body-item">{{ product.quantity }}</td>
-            <td class="table__body-item">{{ product.prov_name }}</td>
-            <td class="table__body-item">{{ product.category }}</td>
-            <td class="table__body-item">$ {{ product.price }}</td>
+          <tr v-for="(affiliate, index) in allAffiliates" :key="index">
+            <td class="table__body-item">{{ affiliate.id }}</td>
+            <td class="table__body-item">{{ affiliate.name }}</td>
+            <td class="table__body-item">{{ affiliate.lastname }}</td>
+            <td class="table__body-item">{{ affiliate.document }}</td>
+            <td class="table__body-item">{{ affiliate.document_number }}</td>
+            <td class="table__body-item">{{ affiliate.email }}</td>
+            <td class="table__body-item">{{ affiliate.phone }}</td>
+            <td class="table__body-item">{{ affiliate.city }}</td>
+            <td class="table__body-item">{{ affiliate.address }}</td>
             <td class="table__body-item">
-              <button class="edit-btn" @click="openEditModal(index)">
+              <button type="button" class="edit-btn" @click="openEditModal(index)">
                 <ges-icon icon="edit" size="lg"></ges-icon>
               </button>
               <button
@@ -41,107 +68,147 @@
     <ModalEditProduct
       v-show="isModalVisible"
       @close="closeModal"
-      v-bind="editProduct"
+      v-bind="editAffiliate"
     >
     </ModalEditProduct>
     <ConfirmationModal
       v-show="isConfirmationModalVisible"
       @close="closeConfirmationModal"
       @delete-item="deleteProduct"
-      :idItem="deleteProductId"
+      :idItem="deleteAffiliateId"
     ></ConfirmationModal>
   </div>
 </template>
 <script>
-import axios from "axios";
-import jwt_decode from "jwt-decode";
-import ModalEditProduct from "../modals/ModalEditProduct.vue";
+import gql from "graphql-tag";
+import ModalEditAffiliate from "../modals/ModalEditAffiliate.vue";
 import ConfirmationModal from "../modals/ConfirmationModal.vue";
 
 export default {
-  name: "consultaProductos",
+  name: "consultaAfiliados",
   components: {
-    ModalEditProduct,
+    ModalEditAffiliate,
     ConfirmationModal,
   },
   data: function () {
     return {
-      product: {
-        code: "",
-        prov_name: "",
-        p_name: "",
-        quantity: "",
-        movement: "Entrada",
-        price: "",
-        category: "",
-        description: "",
+      affiliate: {
+        id: "",
+        name: "",
+        lastname: "",
+        document: "",
+        document_number: "",
+        email: "",
+        phone: "",
+        city: "",
+        address: "",
       },
-      userProducts: [],
-      editProduct: {},
+      affiliates: [],
+      editAffiliate: {},
       isModalVisible: false,
-      filterProductsInput: "",
+      filterAffiliatesInput: "",
       isConfirmationModalVisible: false,
-      deleteProductId: {},
+      deleteAffiliateId: {},
     };
   },
-  methods: {
-    getUserProducts: function () {
-      let userToken = localStorage.getItem("token_access");
-      let userId = jwt_decode(userToken).user_id.toString();
-      axios
-        .get(`https://gestify-be.herokuapp.com/user/${userId}/products`, {
-          headers: { Authorization: `Bearer ${userToken}` },
-        })
-        .then((result) => {
-          this.userProducts = result.data;
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+  apollo: {
+    allAffiliates: {
+      query: gql`
+        query AllAffiliates {
+          allAffiliates {
+            id
+            name
+            lastname
+            document
+            document_number
+            email
+            phone
+            city
+            address
+          }
+        }
+      `,
     },
-
-    openEditModal(productId) {
+    affiliatesByDocument_number: {
+      query: gql`
+        query AffiliatesByDocument_number($documentNumber: String!) {
+          affiliatesByDocument_number(document_number: $documentNumber) {
+            id
+            name
+            lastname
+            document
+            document_number
+            email
+            phone
+            city
+            address
+            created
+            updated
+          }
+        }
+      `,
+    },
+  },
+  methods: {
+    openEditModal(affiliateId) {
       this.isModalVisible = true;
-      this.editProduct = this.userProducts[productId];
+      this.editAffiliate = this.allAffiliates[affiliateId];
     },
     closeModal() {
       this.isModalVisible = false;
-      this.getUserProducts()
+      this.allAffiliates();
     },
-
     closeConfirmationModal() {
       this.isConfirmationModalVisible = false;
     },
-
-    openConfirmationModal(productId) {
+    openConfirmationModal(affiliateId) {
       this.isConfirmationModalVisible = true;
-      this.deleteProductId = productId;
+      this.deleteAffiliateId = affiliateId;
     },
 
-    deleteProduct(productCodeDelete) {
-      let userToken = localStorage.getItem("token_access");
-      let userId = jwt_decode(userToken).user_id.toString();
-      let productId = this.userProducts[productCodeDelete].code;
-      axios
-        .delete(
-          `https://gestify-be.herokuapp.com/user/${userId}/products/${productId}`,
-          {
-            headers: { Authorization: `Bearer ${userToken}` },
+    deleteAffiliate(deleteAffiliateId) {
+      // let userToken = localStorage.getItem("token_access");
+      // let userId = jwt_decode(userToken).user_id.toString();
+      let affiliateId = this.allAffiliates[deleteAffiliateId].id;
+      this.$apollo.mutate({
+        mutation: gql`
+          mutation Mutation($affiliateId: ID!) {
+            deleteAffiliate(affiliateID: $affiliateId)
           }
-        )
-        .then((result) => {
-          alert("Producto eliminado con éxito");
-          this.getUserProducts();
-          this.closeModal();
-        })
-        .catch((error) => {
-          console.log(error);
-          alert("Falló eliminación de producto");
-        });
+        `,
+        variables: {
+          affiliateId: affiliateId,
+        },
+      });
     },
   },
-  beforeMount() {
-    this.getUserProducts();
+
+  filterAffiliatesInput(affiliatesByDocument_number) {
+    let affiliateDocument =
+      this.allAffiliates[affiliatesByDocument_number].document;
+    this.$apollo.mutate({
+      mutation: gql`
+        query SurveysByDocument($document: Int!) {
+          surveysByDocument(document: $document) {
+            id
+            document
+            question_one
+            question_two
+            question_three
+            question_four
+            question_five
+          }
+        }
+      `,
+      variables() {
+        return {
+          documentNumber: affiliateDocument,
+        };
+      },
+    });
+  },
+  created: function () {
+    this.$apollo.queries.affiliatesByDocument_number.refetch();
   },
 };
 </script>

@@ -27,7 +27,7 @@
             <button
               type="submit"
               class="primary-btn primary-btn--margin"
-              @click="deleteItem(idItem)"
+              @click="deleteElement(idElement)"
             >
               Sí, eliminar
             </button>

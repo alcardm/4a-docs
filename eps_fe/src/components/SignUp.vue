@@ -1,14 +1,14 @@
 <template>
   <div>
-    <!-- <div class="bg-img"></div> -->
+    <div class="bg-img"></div>
     <div class="center-content-column">
       <div class="register-form-container">
         <div class="bg-register">
-          <!-- <img
+          <img
             class="register-img"
             src="../assets/img/register.svg"
             alt="user-inventory"
-          /> -->
+          />
         </div>
         <div class="white-container">
           <div class="header-back-button">
@@ -71,17 +71,25 @@
                 required
               />
             </div>
-            <button
-              type="submit"
-              class="primary-btn"
-            >
-              Registrarme
-            </button>
+            <div class="input-container">
+              <label for="key" class="input-container__label">Key</label>
+              <input
+                type="text"
+                class="input-container__input"
+                name="key"
+                id="key"
+                v-model="user.key"
+                required
+              />
+            </div>
+            <button type="submit" class="primary-btn">Registrarme</button>
           </form>
           <div class="bottom-actions">
             <p>
               ¿Ya tienes cuenta?
-              <router-link to="/user/login" class="bottom-actions__link">Inicia sesión</router-link>
+              <router-link to="/user/login" class="bottom-actions__link"
+                >Inicia sesión</router-link
+              >
             </p>
           </div>
         </div>
@@ -91,7 +99,7 @@
 </template>
 
 <script>
-import axios from "axios";
+import gql from "graphql-tag";
 export default {
   name: "signUp",
   data: function () {
@@ -101,26 +109,38 @@ export default {
         username: "",
         email: "",
         password: "",
+        key: "",
       },
     };
   },
+
   methods: {
-    sendToLogIn: function () {
-      axios
-        .post("https://eps-authms.herokuapp.com/user", this.user, {
-          headers: {},
+    sendToLogIn: async function () {
+      await this.$apollo
+        .mutate({
+          mutation: gql`
+            mutation ($userInput: SignUpInput!) {
+              signUpUser(userInput: $userInput) {
+                refresh
+                access
+              }
+            }
+          `,
+          variables: {
+            userInput: this.user,
+          },
         })
         .then((result) => {
           let dataSignUp = {
             username: this.user.username,
-            token_access: result.data.access,
-            token_refresh: result.data.refresh,
+            token_access: result.data.signUpUser.access,
+            token_refresh: result.data.signUpUser.refresh,
           };
           this.$emit("completedSignUp", dataSignUp);
         })
         .catch((error) => {
-          console.error(error);
-          alert("Falló el registro");
+          console.log(error);
+          alert("ERROR: Fallo en el registro.");
         });
     },
   },

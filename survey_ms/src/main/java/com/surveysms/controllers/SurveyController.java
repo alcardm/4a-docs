@@ -5,7 +5,6 @@ import com.surveysms.models.Survey;
 import com.surveysms.repositories.SurveyRepository;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.http.HttpResponse;
 import java.util.List;
 
 @RestController
@@ -42,5 +41,21 @@ public class SurveyController {
             throw new SurveyNotFoundException("No se encontrarón coincidencias con el documento" + document);
         }
         return surveys;
+    }
+    @GetMapping("/surveys")
+    List<Survey> getAllSurveys(){
+        List<Survey> surveys = surveyRepository.findAll();
+        if (surveys == null){
+            throw new SurveyNotFoundException("No se encontrarón coincidencias");
+        }
+        return surveys;
+    }
+    @DeleteMapping("/surveys/{id}")
+    String deleteSurvey(@PathVariable String id){
+        String surveyDel = surveyRepository.deleteSurveyById(id);
+        if (surveyDel == null){
+            throw new SurveyNotFoundException("No se encontrarón coincidencias con el id" + id);
+        }
+        return surveyDel;
     }
 }

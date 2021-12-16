@@ -14,7 +14,7 @@ const authentication = async ({ req }) => {
         redirect: "follow",
       };
       let response = await fetch(
-        `${serverConfig.auth_api_url}/verifyToken/`,
+        `${serverConfig.auth_api_url}verifyToken`,
         requestOptions
       );
       if (response.status != 200) {

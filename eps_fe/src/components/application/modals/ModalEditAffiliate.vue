@@ -8,7 +8,7 @@
         aria-describedby="modalDescription"
       >
         <header class="modal-header" id="modalTitle">
-          <slot name="header"> Editar producto No. {{ code }} </slot>
+          <slot name="header"> Editar Afiliado No. {{ document }} </slot>
           <button
             type="button"
             class="close-btn"
@@ -18,67 +18,69 @@
             <ges-icon icon="times-circle" size="lg"></ges-icon>
           </button>
         </header>
-        <form class="modal-form-container" v-on:submit.prevent="updateProduct">
+        <form
+          class="modal-form-container"
+          v-on:submit.prevent="affiliateUpdated"
+        >
           <div class="register-form">
             <div class="input-container">
-              <label for="code" class="input-container__label">Código</label>
+              <label for="id" class="input-container__label">Código</label>
               <input
                 type="text"
                 class="input-container__input"
-                name="code"
-                id="code"
+                name="id"
+                id="id"
                 required
-                v-model="code"
+                v-model="id"
                 disabled
               />
             </div>
             <div class="input-container">
-              <label for="p_name" class="input-container__label"
-                >Nombre del producto</label
-              >
+              <label for="name" class="input-container__label">Nombres</label>
               <input
                 type="text"
                 class="input-container__input"
-                name="p_name"
-                id="p_name"
+                name="name"
+                id="name"
                 required
-                v-model="p_name"
+                v-model="name"
                 maxlength="40"
               />
             </div>
             <div class="input-container">
-              <label for="provider" class="input-container__label"
-                >Proveedor</label
+              <label for="lastname" class="input-container__label"
+                >Apellidos</label
+              >
+              <input
+                type="text"
+                class="input-container__input"
+                name="lastname"
+                id="lastname"
+                required
+                v-model="lastname"
+                maxlength="40"
+              />
+            </div>
+            <div class="input-container">
+              <label for="document" class="input-container__label"
+                >Tipo Documento</label
               >
               <select
                 class="input-container__input"
-                name="provider"
-                id="provider"
+                name="document"
+                id="document"
                 required
-                v-model="prov_name"
+                v-model="document"
               >
                 <option disabled>Seleccione</option>
-                <option v-for="prov in providers" :key="prov">
-                  {{ prov.p_name }}
+                <option v-for="tipo in document" :key="tipo">
+                  {{ tipo.document }}
                 </option>
               </select>
             </div>
             <div class="input-container">
-              <label for="quantity" class="input-container__label"
-                >Cantidad</label
-              >
-              <input
-                type="number"
-                class="input-container__input"
-                name="quantity"
-                id="quantity"
-                required
-                v-model="quantity"
-              />
-            </div>
-            <div class="input-container">
-              <label for="price" class="input-container__label"
-                >Costo unitario</label
+              <label for="document_number" class="input-container__label"
+                >Número Document</label
               >
               <input
                 type="number"
@@ -90,62 +92,58 @@
               />
             </div>
             <div class="input-container">
-              <label for="category" class="input-contailer__label"
-                >Categoría del producto</label
-              >
-              <select
+              <label for="email" class="input-contailer__label">Email</label>
+              <input
+                type="email"
                 class="input-container__input"
-                name="unit"
-                id="unit"
+                name="email"
+                id="email"
                 required
-                v-model="category"
-              >
-                <option disabled>Seleccione</option>
-                <option
-                  v-for="cat in categories"
-                  :key="cat"
-                  v-bind:value="cat.cod"
-                >
-                  {{ cat.name }}
-                </option>
-              </select>
+                v-model="email"
+              />
             </div>
             <div class="input-container">
-              <label for="movement" class="input-contailer__label"
-                >Movimiento</label
-              >
-              <select
+              <label for="phone" class="input-container__label">Celular</label>
+              <input
+                type="number"
                 class="input-container__input"
-                name="movementt"
-                id="movement"
+                name="phone"
+                id="phone"
                 required
-                v-model="movement"
-              >
-                <option value="Entrada">Entrada</option>
-                <option value="Salida">Salida</option>
-              </select>
+                v-model="phone"
+              />
             </div>
             <div class="input-container">
-              <label for="description" class="input-container__label"
-                >Descripción</label
+              <label for="city" class="input-container__label">Celular</label>
+              <input
+                type="text"
+                class="input-container__input"
+                name="city"
+                id="city"
+                required
+                v-model="city"
+              />
+            </div>
+            <div class="input-container">
+              <label for="address" class="input-container__label"
+                >Celular</label
               >
               <input
                 type="text"
                 class="input-container__input"
-                name="description"
-                id="description"
+                name="address"
+                id="address"
                 required
-                v-model="description"
+                v-model="address"
               />
             </div>
           </div>
-          <button
-            type="submit"
-            class="primary-btn primary-btn--margin"
-          >
-            Actualizar producto
+          <button type="submit" class="primary-btn primary-btn--margin">
+            Actualizar afiliado
           </button>
-          <button class="cancel-btn" @click="close" type="button">Cancelar</button>
+          <button class="cancel-btn" @click="close" type="button">
+            Cancelar
+          </button>
         </form>
       </div>
     </div>
@@ -153,99 +151,88 @@
 </template>
 
 <script>
-import axios from "axios";
+import gql from "graphql-tag";
 import jwt_decode from "jwt-decode";
+
 export default {
-  name: "ModalEditProduct",
+  name: "ModalEditAffiliate",
+
   data: function () {
     return {
-      productUpdated: {
-        code: "",
-        p_name: "",
-        prov_name: "",
-        quantity: 0,
-        movement: "",
-        price: 0,
-        category: "",
-        description: "",
+      affiliateUpdated: {
+        id: "",
+        name: "",
+        lastname: "",
+        document: [],
+        document_number: "",
+        email: "",
+        phone: "",
+        city: "",
+        address: "",
       },
-      categories: [],
-      providers: [],
     };
   },
   props: {
-    code: "",
-    prov_name: "",
-    p_name: "",
-    quantity: "",
-    price: "",
-    category: "",
-    description: "",
+    id: "",
+    name: "",
+    lastname: "",
+    document: [],
+    document_number: "",
+    email: 0,
+    phone: "",
+    city: "",
+    address: "",
   },
+
   methods: {
-    close() {
-      this.$emit("close");
+    setDataAffiliate: function () {
+      this.affiliateUpdated.id = this.id;
+      this.affiliateUpdated.name = this.name;
+      this.affiliateUpdated.lastname = this.lastname;
+      this.affiliateUpdated.document = this.document;
+      this.affiliateUpdated.document_number = this.document_number;
+      this.affiliateUpdated.email = this.email;
+      this.affiliateUpdated.phone = this.phone;
+      this.affiliateUpdated.city = this.city;
+      this.affiliateUpdated.address = this.address;
     },
-    getRemoteCategories: function () {
-      axios
-        .get("https://gestify-be.herokuapp.com/categories", {})
-        .then((categories) => {
-          this.categories = categories.data;
+    updateAffiliate: async function () {
+      let affiliateId = this.id.toString();
+      this.setDataAffiliate();
+
+      await this.$apollo
+        .mutate({
+          mutation: gql`
+          mutation (affiliateInput: $affiliateInput) {
+             createAffiliate(affiliateInput: $affiliateInput) {
+              id
+              name
+              lastname
+              document
+              document_number
+              email
+              phone
+              city
+              address
+              created
+              updated
+            }
+          }
+        `,
+          variables: {
+            afiliado: this.affiliateUpdated,
+          },
+        })
+        .then((result) => {
+          console.log(result);
+          alert("Afiliado actualizado con éxito");
+          this.$emit("close");
         })
         .catch((error) => {
           console.log(error);
+          alert("Falló actualización de afiliado");
         });
     },
-    getUserProviders: function () {
-      let userToken = localStorage.getItem("token_access");
-      let userId = jwt_decode(userToken).user_id.toString();
-      axios
-        .get(`https://gestify-be.herokuapp.com/user/${userId}/providers`, {
-          headers: { Authorization: `Bearer ${userToken}` },
-        })
-        .then((result) => {
-          this.providers = result.data;
-        });
-    },
-
-    setDataProduct: function () {
-      this.productUpdated.code = this.code;
-      this.productUpdated.p_name = this.p_name;
-      this.productUpdated.prov_name = this.prov_name;
-      this.productUpdated.quantity = this.quantity;
-      this.productUpdated.price = this.price;
-      this.productUpdated.category = this.category;
-      this.productUpdated.description = this.description;
-      this.productUpdated.movement = this.movement;
-    },
-    updateProduct: function () {
-      let userToken = localStorage.getItem("token_access");
-      let userId = jwt_decode(userToken).user_id.toString();
-      let productId = this.code.toString();
-      this.setDataProduct();
-
-      axios
-        .put(
-          `https://eps-authms.herokuapp.com/user/${userId}/affiliates/${affiliatesId}`,
-          this.productUpdated,
-          {
-            headers: { Authorization: `Bearer ${userToken}` },
-          }
-        )
-        .then((result) => {
-          console.log(result)
-          alert("Producto actualizado con éxito");
-          this.$emit('close')
-        })
-        .catch((error) => {
-          console.log(error)
-          alert("Falló actualización de producto");
-        });
-    },
-  },
-  beforeMount() {
-    this.getRemoteCategories();
-    this.getUserProviders();
   },
 };
 </script>

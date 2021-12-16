@@ -1,4 +1,5 @@
 from rest_framework import status, views
+from rest_framework import response
 from rest_framework.response import Response
 
 from affiliatesApp.models.affiliates import Affiliates
@@ -9,7 +10,3 @@ class AffiliatesListView(views.APIView):
         affiliates = Affiliates.objects.all()
         serializer = AffiliatesSerializer(affiliates, many = True)
         return Response(serializer.data)
-
-
-
-    

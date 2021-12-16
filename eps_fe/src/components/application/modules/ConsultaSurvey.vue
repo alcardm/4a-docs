@@ -1,45 +1,63 @@
 <template>
   <div>
-    <h1>Consulta de proveedores</h1>
-    <!-- <form action="" class="search-form">
-      <div class="input-container input-container--search">
-        <label for="search" class="input-container__label">Buscar</label>
-        <input
-          type="text"
-          class="input-container__input"
-          name="search"
-          id="search"
-          required
-        />
-        <small>Puedes buscar por código o nombre del producto</small>
+    <h1 class="form-title">Encuestas</h1>
+    <form action="" class="search-form">
+      <div class="flex">
+        <div class="input-container input-container--search">
+          <label for="search" class="input-container__label">Buscar</label>
+          <input
+            type="text"
+            class="input-container__input"
+            name="search"
+            id="search"
+            required
+            v-model="filterSurveysInput"
+          />
+          <small>Buscar por documento</small>
+        </div>
+        <button v-on:click="filterSurveys" class="primary-btn primary-btn--search">Filtrar</button>
       </div>
-    </form> -->
+    </form>
+  </div>
+  <br />
+  <div>
     <table class="scroll-table">
       <table class="table">
         <thead>
           <tr class="table__header">
-            <th class="table__header-item">Nombre</th>
-            <th class="table__header-item">Contacto</th>
-            <th class="table__header-item">Correo electrónico</th>
-            <th class="table__header-item">Acciones</th>
+            <th class="table__header-item">Id</th>
+            <th class="table__header-item">N° Doc</th>
+            <th class="table__header-item">Pregunta N° 1</th>
+            <th class="table__header-item">Pregunta N° 2</th>
+            <th class="table__header-item">Pregunta N° 3</th>
+            <th class="table__header-item">Pregunta N° 4</th>
+            <th class="table__header-item">Pregunta N° 5</th>
+            <th class="table__header-item"></th>
           </tr>
         </thead>
         <tbody class="table__body">
-          <tr v-for="(provider, index) in userProviders" :key="index">
-            <td class="table__body-item">{{ provider.p_name }}</td>
-            <td class="table__body-item">{{ provider.p_telephone }}</td>
-            <td class="table__body-item">{{ provider.p_email }}</td>
+          <tr v-for="(survey, index) in getAllSurveys" :key="index">
+            <td class="table__body-item">{{ survey.id }}</td>
+            <td class="table__body-item">{{ survey.document }}</td>
             <td class="table__body-item">
-              <button class="edit-btn" @click="openEditProviderModal(index)">
+              {{ survey.question_one ? "sí" : "no" }}
+            </td>
+            <td class="table__body-item">
+              {{ survey.question_two ? "sí" : "no" }}
+            </td>
+            <td class="table__body-item">
+              {{ survey.question_three ? "sí" : "no" }}
+            </td>
+            <td class="table__body-item">
+              {{ survey.question_four ? "sí" : "no" }}
+            </td>
+            <td class="table__body-item">
+              {{ survey.question_five ? "sí" : "no" }}
+            </td>
+            <td class="table__body-item">
+              <button class="edit-btn" @click="openEditModal(index)">
                 <ges-icon icon="edit" size="lg"></ges-icon>
               </button>
-              <!-- <button
-                type="button"
-                class="close-btn"
-                @click="deleteProvider(provider.p_name)"
-              >
-                <ges-icon size="lg" icon="trash-alt"></ges-icon>
-              </button> -->
               <button
                 type="button"
                 class="close-btn"
@@ -52,102 +70,139 @@
         </tbody>
       </table>
     </table>
-    <ModalEditProvider
+    <ModalEditProduct
       v-show="isModalVisible"
       @close="closeModal"
-      v-bind="editProvider"
+      v-bind="editSurveys"
     >
-    </ModalEditProvider>
+    </ModalEditProduct>
     <ConfirmationModal
       v-show="isConfirmationModalVisible"
       @close="closeConfirmationModal"
-      @delete-item="deleteProvider"
-      :idItem="deleteProviderId"
+      @delete-item="deleteSurvey"
+      :idItem="deleteSurveysId"
     ></ConfirmationModal>
   </div>
 </template>
 <script>
-import axios from "axios";
-import jwt_decode from "jwt-decode";
-import ModalEditProvider from "../modals/ModalEditProvider.vue";
+import gql from "graphql-tag";
+import ModalEditSurvey from "../modals/ModalEditSurvey.vue";
 import ConfirmationModal from "../modals/ConfirmationModal.vue";
 export default {
-  name: "consultaProveedores",
+  name: "consultaEncuestas",
   components: {
-    ModalEditProvider,
+    ModalEditSurvey,
     ConfirmationModal,
   },
   data: function () {
     return {
-      provider: {
-        p_name: "",
-        p_telephone: "",
-        p_email: "",
+      survey: {
+        id: "",
+        document: "",
+        question_one: "",
+        question_two: "",
+        question_three: "",
+        question_four: "",
+        question_five: "",
       },
-      userProviders: [],
-      editProvider: {},
+      editSurveys: {},
       isModalVisible: false,
+      filterSurveysInput: "",
       isConfirmationModalVisible: false,
-      deleteProviderId: {},
+      deleteSurveysId: {},
     };
   },
-  methods: {
-    getUserProviders: function () {
-      let userToken = localStorage.getItem("token_access");
-      let userId = jwt_decode(userToken).user_id.toString();
-      axios
-        .get(`https://gestify-be.herokuapp.com/user/${userId}/providers`, {
-          headers: { Authorization: `Bearer ${userToken}` },
-        })
-        .then((result) => {
-          this.userProviders = result.data;
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+  apollo: {
+    getAllSurveys: {
+      query: gql`
+        query getAllSurveys {
+          getAllSurveys {
+            id
+            document
+            question_one
+            question_two
+            question_three
+            question_four
+            question_five
+          }
+        }
+      `,
     },
-    openEditProviderModal(providerId) {
+    surveysByDocument: {
+      query: gql`
+        query surveysByDocument($documentNumber: Int!) {
+          surveysByDocument(document: $document) {
+            id
+            document
+            question_one
+            question_two
+            question_three
+            question_four
+            question_five
+          }
+        }
+      `,
+    },
+  },
+  methods: {
+    openEditModal(surveyId) {
       this.isModalVisible = true;
-      this.editProvider = this.userProviders[providerId];
+      this.editSurveys = this.getAllSurveys[surveyId];
     },
     closeModal() {
       this.isModalVisible = false;
-      this.getUserProviders()
+      this.getAllSurveys();
     },
-
     closeConfirmationModal() {
       this.isConfirmationModalVisible = false;
     },
-
-    openConfirmationModal(providerId) {
+    openConfirmationModal(surveyId) {
       this.isConfirmationModalVisible = true;
-      this.deleteProviderId = providerId;
+      this.deleteSurveysId = surveyId;
     },
 
-    deleteProvider(providerCodeDelete) {
-      let userToken = localStorage.getItem("token_access");
-      let userId = jwt_decode(userToken).user_id.toString();
-      let providerId = this.userProviders[providerCodeDelete].p_name;
-      axios
-        .delete(
-          `https://gestify-be.herokuapp.com/user/${userId}/providers/${providerId}`,
-          {
-            headers: { Authorization: `Bearer ${userToken}` },
+    deleteSurvey(deleteSurveysId) {
+      // let userToken = localStorage.getItem("token_access");
+      // let userId = jwt_decode(userToken).user_id.toString();
+      let surveyId = this.getAllSurveys[deleteSurveysId].id;
+      this.$apollo.mutate({
+        mutation: gql`
+          mutation DeleteSurveyById($deleteSurveyByIdId: ID!) {
+            deleteSurveyById(id: $deleteSurveyByIdId)
           }
-        )
-        .then((result) => {
-          alert("Proveedor eliminado con éxito");
-          this.getUserProviders();
-          this.closeModal();
-        })
-        .catch((error) => {
-          console.log(error);
-          alert("Falló eliminación de proveedor");
-        });
+        `,
+        variables: {
+          deleteSurveyByIdId: surveyId,
+        },
+      });
     },
   },
-  beforeMount() {
-    this.getUserProviders();
+
+  filterSurveysInput(surveysByDocument) {
+    let surveyDocument = this.getAllSurveys[surveysByDocument].document;
+    this.$apollo.mutate({
+      mutation: gql`
+        query SurveysByDocument($document: Int!) {
+          surveysByDocument(document: $document) {
+            id
+            document
+            question_one
+            question_two
+            question_three
+            question_four
+            question_five
+          }
+        }
+      `,
+      variables() {
+        return {
+          surveysByDocument: surveyDocument,
+        };
+      },
+    });
+  },
+    created: function () {
+    this.$apollo.queries.surveysByDocument.refetch();
   },
 };
 </script>

@@ -13,11 +13,11 @@ const authTypeDefs = gql`
     password: String!
   }
   input SignUpInput {
-    username: String!
-    password: String!
     name: String!
+    username: String!
     email: String!
-    balance: Int!
+    password: String!
+    key: String!
   }
   type UserDetail {
     id: Int!

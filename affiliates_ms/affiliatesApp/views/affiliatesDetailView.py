@@ -5,6 +5,9 @@ from affiliatesApp.serializers.affiliatesSerializer import AffiliatesSerializer
 
 class AffiliatesDetailView(views.APIView):
     def get(self,request,pk):
-        affiliates = Affiliates.objects.get(id=pk)
-        serializer = AffiliatesSerializer(affiliates, many=False)
-        return Response(serializer.data)
+        try:
+            affiliates = Affiliates.objects.get(document_number=pk)
+            serializer = AffiliatesSerializer(affiliates, many=False)
+            return Response(serializer.data)
+        except Exception:
+            return Response({"data": False})

@@ -3,15 +3,14 @@
     <div class="bg-img"></div>
     <div class="container">
       <nav class="nav">
-        <img src="../assets/img/g-icon.svg" alt="Gestify" class="gestify-icon" />
+        <img src="../assets/img/g-icon.png" alt="Gestify" class="gestify-icon" />
       </nav>
       <div class="content">
         <section class="welcome">
           <article class="welcome-text">
             <h1 class="welcome-text__title">EPS</h1>
             <p class="welcome-text__description">
-              Consulta, Edita y añade todo lo relacionado con afiliados y
-              encuestas covid-19
+              Crea tus encuestas de covid-19 y consultalas con facilidad
             </p>
             <button
               class="primary-btn custom-home-btn"
@@ -20,7 +19,7 @@
               <ges-icon icon="sign-in-alt" size="lg" />
               Iniciar sesión
             </button>
-                        <button
+            <button
               class="primary-btn custom-home-btn"
               v-on:click="sendToSignUp"
             >
@@ -29,7 +28,7 @@
           </article>
           <img
             class="welcome-img"
-            src="../assets/img/img-home.svg"
+            src="../assets/img/img-home.png"
             alt="user-inventory"
           />
         </section>

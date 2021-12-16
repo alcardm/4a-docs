@@ -39,8 +39,10 @@
         </form>
         <div class="bottom-actions">
           <p>
-          ¿Aún no eres usuario?
-          <router-link to="/user/signup" class="bottom-actions__link">Regístrate</router-link>
+            ¿Aún no eres usuario?
+            <router-link to="/user/signup" class="bottom-actions__link"
+              >Regístrate</router-link
+            >
           </p>
         </div>
       </div>
@@ -49,7 +51,7 @@
 </template>
 
 <script>
-import axios from "axios";
+import gql from "graphql-tag";
 export default {
   name: "logIn",
   data: function () {
@@ -61,23 +63,33 @@ export default {
     };
   },
   methods: {
-    sendToDashboard: function () {
-      axios
-        .post("https://eps-authms.herokuapp.com/login", this.user, {
-          headers: {},
+    sendToDashboard: async function () {
+      await this.$apollo
+        .mutate({
+          mutation: gql`
+            mutation ($credentials: CredentialsInput!) {
+              logIn(credentials: $credentials) {
+                refresh
+                access
+              }
+            }
+          `,
+          variables: {
+            credentials: this.user,
+          },
         })
         .then((result) => {
           let dataLogIn = {
             username: this.user.username,
-            token_access: result.data.access,
-            token_refresh: result.data.refresh,
+            token_access: result.data.logIn.access,
+            token_refresh: result.data.logIn.refresh,
           };
           this.$emit("logInSuccess", dataLogIn);
-          this.$router.push({ name: "mainLayout", });
+          this.$router.push({ name: "mainLayout" });
         })
         .catch((error) => {
-          if (error.response.status == "401")
-            alert("Verifica tus credenciales para continuar");
+          console.log(error);
+          alert("ERROR 401: Verifica tus credenciales para continuar");
         });
     },
   },
