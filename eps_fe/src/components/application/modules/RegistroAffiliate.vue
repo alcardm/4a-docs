@@ -154,7 +154,7 @@ export default {
       })
     },
     clearData: function () {
-      this.affiliate.id = "";
+      // this.affiliate.id = "";
       this.affiliate.name = "";
       this.affiliate.lastname = "";
       this.affiliate.document = "";

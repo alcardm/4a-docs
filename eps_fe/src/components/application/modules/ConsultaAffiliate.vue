@@ -1,7 +1,7 @@
 <template>
   <div>
     <h1 class="form-title">Afiliados</h1>
-    <form action="" class="search-form">
+    <form class="search-form">
       <div class="flex">
         <div class="input-container input-container--search">
           <label for="search" class="input-container__label">Buscar</label>
@@ -11,11 +11,10 @@
             name="search"
             id="search"
             required
-            v-model="filterAffiliatesInput"
+            v-model="search"
           />
           <small>Buscar por documento</small>
         </div>
-        <button v-on:click="filterAffiliates" class="primary-btn primary-btn--search">Filtrar</button>
       </div>
     </form>
   </div>
@@ -35,11 +34,11 @@
             <th class="table__header-item">Celular</th>
             <th class="table__header-item">Ciudad</th>
             <th class="table__header-item">Dirección</th>
-            <th class="table__header-item"></th>
+            <th class="table__header-item">Acciones</th>
           </tr>
         </thead>
         <tbody class="table__body">
-          <tr v-for="(affiliate, index) in allAffiliates" :key="index">
+          <tr v-for="(affiliate, index) in filteredAffiliates" :key="index">
             <td class="table__body-item">{{ affiliate.id }}</td>
             <td class="table__body-item">{{ affiliate.name }}</td>
             <td class="table__body-item">{{ affiliate.lastname }}</td>
@@ -50,13 +49,17 @@
             <td class="table__body-item">{{ affiliate.city }}</td>
             <td class="table__body-item">{{ affiliate.address }}</td>
             <td class="table__body-item">
-              <button type="button" class="edit-btn" @click="openEditModal(index)">
+              <button
+                type="button"
+                class="edit-btn"
+                @click="openEditModal(index)"
+              >
                 <ges-icon icon="edit" size="lg"></ges-icon>
               </button>
               <button
                 type="button"
                 class="close-btn"
-                @click="openConfirmationModal(index)"
+                @click="openConfirmationModal(affiliate.id)"
               >
                 <ges-icon size="lg" icon="trash-alt"></ges-icon>
               </button>
@@ -65,16 +68,16 @@
         </tbody>
       </table>
     </div>
-    <ModalEditProduct
+    <ModalEditAffiliate
       v-show="isModalVisible"
       @close="closeModal"
       v-bind="editAffiliate"
     >
-    </ModalEditProduct>
+    </ModalEditAffiliate>
     <ConfirmationModal
       v-show="isConfirmationModalVisible"
       @close="closeConfirmationModal"
-      @delete-item="deleteProduct"
+      @delete-item="deleteAffiliate"
       :idItem="deleteAffiliateId"
     ></ConfirmationModal>
   </div>
@@ -106,7 +109,7 @@ export default {
       affiliates: [],
       editAffiliate: {},
       isModalVisible: false,
-      filterAffiliatesInput: "",
+      search: "",
       isConfirmationModalVisible: false,
       deleteAffiliateId: {},
     };
@@ -129,25 +132,6 @@ export default {
         }
       `,
     },
-    affiliatesByDocument_number: {
-      query: gql`
-        query AffiliatesByDocument_number($documentNumber: String!) {
-          affiliatesByDocument_number(document_number: $documentNumber) {
-            id
-            name
-            lastname
-            document
-            document_number
-            email
-            phone
-            city
-            address
-            created
-            updated
-          }
-        }
-      `,
-    },
   },
   methods: {
     openEditModal(affiliateId) {
@@ -166,49 +150,44 @@ export default {
       this.deleteAffiliateId = affiliateId;
     },
 
-    deleteAffiliate(deleteAffiliateId) {
-      // let userToken = localStorage.getItem("token_access");
-      // let userId = jwt_decode(userToken).user_id.toString();
-      let affiliateId = this.allAffiliates[deleteAffiliateId].id;
-      this.$apollo.mutate({
-        mutation: gql`
-          mutation Mutation($affiliateId: ID!) {
-            deleteAffiliate(affiliateID: $affiliateId)
-          }
-        `,
-        variables: {
-          affiliateId: affiliateId,
-        },
-      });
+    deleteAffiliate: async function () {
+      await this.$apollo
+        .mutate({
+          mutation: gql`
+            mutation DeleteAffiliate($affiliateId: ID!) {
+              deleteAffiliate(affiliateID: $affiliateId)
+            }
+          `,
+          variables: {
+            affiliateId: this.deleteAffiliateId,
+          },
+        })
+        .then((res) => {
+          alert("Se eliminó el afiliado");
+          this.$apollo.queries.allAffiliates.refetch();
+          console.log(res);
+        })
+        .catch((err) => {
+          alert("Hubo un error");
+          console.log(err);
+        });
     },
-  },
 
-  filterAffiliatesInput(affiliatesByDocument_number) {
-    let affiliateDocument =
-      this.allAffiliates[affiliatesByDocument_number].document;
-    this.$apollo.mutate({
-      mutation: gql`
-        query SurveysByDocument($document: Int!) {
-          surveysByDocument(document: $document) {
-            id
-            document
-            question_one
-            question_two
-            question_three
-            question_four
-            question_five
-          }
-        }
-      `,
-      variables() {
-        return {
-          documentNumber: affiliateDocument,
-        };
-      },
-    });
+
   },
-  created: function () {
-    this.$apollo.queries.affiliatesByDocument_number.refetch();
-  },
+    computed: {
+    filteredAffiliates() {
+      if (this.search) {
+        return this.allAffiliates.filter(item => {
+          return this.filteredAffiliates
+
+        });
+      } else {
+      alert("Búsqueda sin resultados")
+        return this.allAffiliates;
+      }
+    }
+  }
+
 };
 </script>

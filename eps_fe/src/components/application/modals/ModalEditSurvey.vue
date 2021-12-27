@@ -8,7 +8,7 @@
         aria-describedby="modalDescription"
       >
         <header class="modal-header" id="modalTitle">
-          <slot name="header"> Editar encuesta {{ id }} </slot>
+          <slot name="header"> Detalle encuesta No. {{ document }} </slot>
           <button
             type="button"
             class="close-btn"
@@ -50,85 +50,80 @@
               <label for="question_one" class="input-contailer__label"
                 >¿Ha sufrido de covid-19?</label
               >
-              <select
+              <input
+                type="text"
                 class="input-container__input"
                 name="question_one"
                 id="question_one"
                 required
                 v-model="question_one"
-              >
-                <option value="Si">Si</option>
-                <option value="No">No</option>
-              </select>
+                disabled
+              />
             </div>
             <div class="input-container">
               <label for="question_two" class="input-contailer__label"
                 >¿Ha estado en contacto con personas que han sufrido de
                 covid-19?</label
               >
-              <select
+              <input
+                type="text"
                 class="input-container__input"
                 name="question_two"
                 id="question_two"
                 required
                 v-model="question_two"
-              >
-                <option value="Si">Si</option>
-                <option value="No">No</option>
-              </select>
+                disabled
+              />
             </div>
             <div class="input-container">
               <label for="question_three" class="input-contailer__label"
                 >¿Ha tenido temperatura mayor a 37° grados?</label
               >
-              <select
+              <input
+                type="text"
                 class="input-container__input"
                 name="question_three"
                 id="question_three"
                 required
                 v-model="question_three"
-              >
-                <option value="Si">Si</option>
-                <option value="No">No</option>
-              </select>
+                disabled
+              />
             </div>
             <div class="input-container">
               <label for="question_four" class="input-contailer__label"
                 >¿Ha tenido dificultad para respirar durante la última
                 semana?</label
               >
-              <select
+              <input
+                type="text"
                 class="input-container__input"
                 name="question_four"
                 id="question_four"
                 required
                 v-model="question_four"
-              >
-                <option value="Si">Si</option>
-                <option value="No">No</option>
-              </select>
+                disabled
+              />
             </div>
             <div class="input-container">
               <label for="question_five" class="input-contailer__label"
                 >¿Se ha sentido más cansado que de costumbre durante la última
                 semana?</label
               >
-              <select
+              <input
+                type="text"
                 class="input-container__input"
                 name="question_five"
                 id="question_five"
                 required
                 v-model="question_five"
-              >
-                <option value="Si">Si</option>
-                <option value="No">No</option>
-              </select>
+                disabled
+              />
             </div>
           </div>
           <div class="buttons-container">
-            <button class="primary-btn primary-btn--margin" type="submit">
+            <!-- <button class="primary-btn primary-btn--margin" type="submit">
               Actualizar encuesta
-            </button>
+            </button> -->
             <button class="cancel-btn" v-on:click="close" type="button">
               Cancelar
             </button>
@@ -172,17 +167,7 @@ export default {
       await this.$apollo
         .mutate({
           mutation: gql`
-            mutation ($surveyInput: SurveyInput!) {
-              createSurvey(surveyInput: $surveyInput) {
-                id
-                document
-                question_one
-                question_two
-                question_three
-                question_four
-                question_five
-              }
-            }
+
           `,
           variables: {
             encuesta: this.surveyUpdated,
@@ -199,56 +184,21 @@ export default {
         });
     },
 
-    // close() {
-    //   this.$emit("close");
-    // },
+    close() {
+      this.$emit("close");
+    },
 
-    // getSurveys: function () {
-    //   let userToken = localStorage.getItem("token_access");
-    //   let userId = jwt_decode(userToken).user_id.toString();
-    //   axios
-    //     .get(`https://eps-surveys-ms.herokuapp.com/user/${userId}/surveys`, {
-    //       headers: { Authorization: `Bearer ${userToken}` },
-    //     })
-    //     .then((result) => {
-    //       this.surveys = result.data;
-    //     })
-    //     .catch((error) => {
-    //       console.log(error);
-    //     });
-    // },
 
-    // setDataSurvey: function () {
-    //   this.surveyUpdated.id = this.id;
-    //   this.surveyUpdated.document = this.document;
-    //   this.surveyUpdated.question_one = this.question_one;
-    //   this.surveyUpdated.question_two = this.question_two;
-    //   this.surveyUpdated.question_three = this.question_three;
-    //   this.surveyUpdated.question_four = this.question_four;
-    //   this.surveyUpdated.question_five = this.question_five;
-    // },
-    // updateSurvey: function () {
-    //   let userToken = localStorage.getItem("token_access");
-    //   let userId = jwt_decode(userToken).user_id.toString();
-    //   let surveyId = this.document;
-    //   this.setDataSurvey();
-    //   axios
-    //     .put(
-    //       `https://eps-surveys-ms.herokuapp.com/user/${userId}/surveys/${surveyId}`,
-    //       this.surveyUpdated,
-    //       {
-    //         headers: { Authorization: `Bearer ${userToken}` },
-    //       }
-    //     )
-    // .then((result) => {
-    //   alert("Encuesta editada con éxito");
-    //   this.$emit("close");
-    // })
-    // .catch((error) => {
-    //   console.log(error);
-    //   alert("Falló edición de encuesta");
-    // });
-    // },
+    setDataSurvey: function () {
+      this.surveyUpdated.id = this.id;
+      this.surveyUpdated.document = this.document;
+      this.surveyUpdated.question_one = this.question_one;
+      this.surveyUpdated.question_two = this.question_two;
+      this.surveyUpdated.question_three = this.question_three;
+      this.surveyUpdated.question_four = this.question_four;
+      this.surveyUpdated.question_five = this.question_five;
+    },
+
   },
 };
 </script>

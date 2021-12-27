@@ -11,11 +11,11 @@
             name="search"
             id="search"
             required
-            v-model="filterSurveysInput"
+            v-model="search"
+            v-on:keyup.enter="filteredSurvey"
           />
           <small>Buscar por documento</small>
         </div>
-        <button v-on:click="filterSurveys" class="primary-btn primary-btn--search">Filtrar</button>
       </div>
     </form>
   </div>
@@ -32,11 +32,11 @@
             <th class="table__header-item">Pregunta N° 3</th>
             <th class="table__header-item">Pregunta N° 4</th>
             <th class="table__header-item">Pregunta N° 5</th>
-            <th class="table__header-item"></th>
+            <th class="table__header-item">Acciones</th>
           </tr>
         </thead>
         <tbody class="table__body">
-          <tr v-for="(survey, index) in getAllSurveys" :key="index">
+          <tr v-for="(survey, index) in filteredSurvey" :key="index">
             <td class="table__body-item">{{ survey.id }}</td>
             <td class="table__body-item">{{ survey.document }}</td>
             <td class="table__body-item">
@@ -61,7 +61,7 @@
               <button
                 type="button"
                 class="close-btn"
-                @click="openConfirmationModal(index)"
+                @click="openConfirmationModal(survey.id)"
               >
                 <ges-icon size="lg" icon="trash-alt"></ges-icon>
               </button>
@@ -70,17 +70,17 @@
         </tbody>
       </table>
     </table>
-    <ModalEditProduct
+    <ModalEditSurvey
       v-show="isModalVisible"
       @close="closeModal"
       v-bind="editSurveys"
     >
-    </ModalEditProduct>
+    </ModalEditSurvey>
     <ConfirmationModal
       v-show="isConfirmationModalVisible"
       @close="closeConfirmationModal"
       @delete-item="deleteSurvey"
-      :idItem="deleteSurveysId"
+      :idItem="deleteSurveyId"
     ></ConfirmationModal>
   </div>
 </template>
@@ -107,9 +107,9 @@ export default {
       },
       editSurveys: {},
       isModalVisible: false,
-      filterSurveysInput: "",
+      search: "",
       isConfirmationModalVisible: false,
-      deleteSurveysId: {},
+      deleteSurveyId: {},
     };
   },
   apollo: {
@@ -128,81 +128,62 @@ export default {
         }
       `,
     },
-    surveysByDocument: {
-      query: gql`
-        query surveysByDocument($documentNumber: Int!) {
-          surveysByDocument(document: $document) {
-            id
-            document
-            question_one
-            question_two
-            question_three
-            question_four
-            question_five
-          }
-        }
-      `,
-    },
   },
+
   methods: {
-    openEditModal(surveyId) {
+    openEditModal(deleteSurveyByIdId) {
       this.isModalVisible = true;
-      this.editSurveys = this.getAllSurveys[surveyId];
+      this.editSurveys = this.getAllSurveys[deleteSurveyByIdId];
     },
     closeModal() {
       this.isModalVisible = false;
-      this.getAllSurveys();
     },
     closeConfirmationModal() {
       this.isConfirmationModalVisible = false;
     },
-    openConfirmationModal(surveyId) {
+    openConfirmationModal(deleteSurveyByIdId) {
       this.isConfirmationModalVisible = true;
-      this.deleteSurveysId = surveyId;
+      this.deleteSurveyId = deleteSurveyByIdId;
     },
 
-    deleteSurvey(deleteSurveysId) {
-      // let userToken = localStorage.getItem("token_access");
-      // let userId = jwt_decode(userToken).user_id.toString();
-      let surveyId = this.getAllSurveys[deleteSurveysId].id;
-      this.$apollo.mutate({
-        mutation: gql`
-          mutation DeleteSurveyById($deleteSurveyByIdId: ID!) {
-            deleteSurveyById(id: $deleteSurveyByIdId)
-          }
-        `,
-        variables: {
-          deleteSurveyByIdId: surveyId,
-        },
-      });
+    deleteSurvey: async function () {
+      await this.$apollo
+        .mutate({
+          mutation: gql`
+            mutation ($deleteSurveyByIdId: ID!) {
+              deleteSurveyById(id: $deleteSurveyByIdId)
+            }
+          `,
+          variables: {
+            deleteSurveyByIdId: this.deleteSurveyId,
+          },
+        })
+        .then((res) => {
+          alert("Se eliminó encuesta");
+          this.$apollo.queries.getAllSurveys.refetch();
+          console.log(res);
+        })
+        .catch((err) => {
+          alert("Hubo un error");
+          console.log(err);
+        });
     },
   },
 
-  filterSurveysInput(surveysByDocument) {
-    let surveyDocument = this.getAllSurveys[surveysByDocument].document;
-    this.$apollo.mutate({
-      mutation: gql`
-        query SurveysByDocument($document: Int!) {
-          surveysByDocument(document: $document) {
-            id
-            document
-            question_one
-            question_two
-            question_three
-            question_four
-            question_five
-          }
-        }
-      `,
-      variables() {
-        return {
-          surveysByDocument: surveyDocument,
-        };
-      },
-    });
-  },
-    created: function () {
-    this.$apollo.queries.surveysByDocument.refetch();
-  },
+  computed: {
+    filteredSurvey() {
+      if (this.search) {
+        return this.getAllSurveys.filter(item => {
+          return this.filteredSurvey
+
+        });
+      } else {
+      alert("Búsqueda sin resultados")
+        return this.getAllSurveys;
+      }
+    }
+  }
+
+
 };
 </script>

@@ -29,7 +29,7 @@
         <div class="sidenav-bottom-info">
           <!-- <p class="bottom-info__name">{{ userDetailById.name }}</p> -->
           <div class="bottom-actions-container">
-            <router-link to="dashboard/user/profile" class="bottom-info__profile"
+            <router-link to="user/profile" class="bottom-info__profile"
               >Ver mi perfil</router-link
             >
             <a class="bottom-info__action" v-on:click="logOut">
@@ -93,9 +93,11 @@ export default {
   apollo: {
     userDetailById: {
       query: gql`
-        query ($userId: Int!) {
+        query Query($userId: Int!) {
           userDetailById(userId: $userId) {
+            id
             username
+            password
             name
             email
           }
@@ -112,7 +114,7 @@ export default {
   methods: {
     logOut: function () {
       localStorage.clear();
-      this.$router.push({ name: "logIn" });
+      this.$router.push({ name: "homePage" });
     },
   },
 };
